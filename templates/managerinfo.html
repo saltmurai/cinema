@@ -1,0 +1,8 @@
+<h4>Manager Info</h4>
+{% for manager in managers %}
+<div class="manager">
+<h5>Manager Name: {{ manager[1] }}</h5>
+<h6>Manager Age: {{ manager[2] }}</h6>
+<h7>Manager ID: {{ manager[0] }}</h7>
+</div>
+{% endfor %}

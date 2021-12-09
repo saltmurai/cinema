@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\art",
+    "\\static",
+    "\\static\\icons",
+    "\\static\\icons\\js",
+    "\\static\\icons\\less",
+    "\\static\\icons\\metadata",
+    "\\static\\icons\\scss",
+    "\\static\\icons\\sprites",
+    "\\static\\icons\\svgs"
+  ],
+  "SelectedNode": "\\app.py",
+  "PreviewInSolutionExplorer": false
+}
