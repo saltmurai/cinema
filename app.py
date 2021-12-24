@@ -34,6 +34,11 @@ def verifyAndRenderRespective():
             res = runQuery('call delete_old()')
             return render_template('director.html')
 
+        elif username == '1' and password == '1':
+
+            res = runQuery('call delete_old()')
+            return render_template('manager2.html')
+
         else:
             return render_template('loginfail.html')
     except Exception as e:
@@ -400,6 +405,8 @@ def setPrice():
     return '<h5>Something Went Wrong</h5>'
 
 # Routes for director
+
+
 @app.route('/getManagerInfo', methods=['POST'])
 def getManagerInfo():
 
@@ -408,10 +415,10 @@ def getManagerInfo():
 
     if res == []:
         return '<h4>No Manager Info Yet </h4>'
-    
+
     managers = []
     for i in res:
-        managers.append([i[0],i[1],i[2]])
+        managers.append([i[0], i[1], i[2]])
     return render_template('managerinfo.html', managers=managers)
 
 
@@ -432,7 +439,8 @@ def addManager():
         res = runQuery(
             "SELECT manager_id FROM manager_info WHERE manager_id = "+str(managerID))
 
-    res = runQuery("INSERT INTO manager_info VALUES("+str(managerID)+",'"+managerName+"',"+str(managerAge)+")")              
+    res = runQuery("INSERT INTO manager_info VALUES(" +
+                   str(managerID)+",'"+managerName+"',"+str(managerAge)+")")
 
     if res == []:
         print("Was able to add manager")
@@ -446,6 +454,7 @@ def addManager():
 
     return '<h5>Something Went Wrong</h5>'
 
+
 @app.route('/fectchManagerInsertForm', methods=['GET'])
 def getManagerForm():
     return render_template('managerform.html')
@@ -457,13 +466,15 @@ def managerList():
 
     return render_template('currentmanagers.html', managers=res)
 
+
 @app.route('/setNewInfo', methods=['POST'])
 def setManagerInfo():
     managerID = request.form['managerID']
     newName = request.form['newName']
     newAge = request.form['newAge']
 
-    res = runQuery("UPDATE manager_info SET manager_name = '"+newName+"', age = "+str(newAge)+" WHERE manager_id = "+str(managerID))
+    res = runQuery("UPDATE manager_info SET manager_name = '"+newName +
+                   "', age = "+str(newAge)+" WHERE manager_id = "+str(managerID))
 
     if res == []:
         return '<h5>Info Successfully Changed</h5>\
@@ -473,21 +484,146 @@ def setManagerInfo():
         print(res)
     return '<h5>Something Went Wrong</h5>'
 
+
 @app.route('/getManagerInfoForDelete', methods=['GET'])
 def managerList1():
     res = runQuery("SELECT * FROM manager_info")
 
     return render_template('currentmanagers1.html', managers=res)
 
+
 @app.route('/deleteInfo', methods=['POST'])
 def deleteManagerInfo():
     managerID = request.form['managerID']
-    res = runQuery("DELETE FROM manager_info WHERE manager_id = "+str(managerID))
+    res = runQuery(
+        "DELETE FROM manager_info WHERE manager_id = "+str(managerID))
     if res == []:
         return '<h5>Info Successfully Deleted</h5>'
     else:
         print(res)
     return '<h5>Something Went Wrong</h5>'
+
+
+@app.route('/getStaffOption', methods=['POST'])
+def getStaffOption():
+    return render_template('Staff.html')
+
+
+@app.route('/fectchStaffInsertForm', methods=['GET'])
+def getStaffForm():
+    return render_template('staffform.html')
+
+
+@app.route('/InsertStaff', methods=['POST'])
+def insertStaff():
+    staffName = request.form['staffName']
+    staffDob = request.form['staffDob']
+    staffIDcard = request.form['staffIDcard']
+    staffAddress = request.form['staffAddress']
+    staffPosition = request.form['staffPosition']
+    res = runQuery('SELECT * FROM staff_info')
+
+    for i in res:
+        if i[1] == staffName and i[3] == staffIDcard:
+            return '<h5>The Staff Info Already Exists</h5>'
+
+    staffID = 0
+    res = None
+
+    while res != []:
+        staffID = randint(0, 2147483646)
+        res = runQuery(
+            "SELECT staff_id FROM staff_info WHERE staff_id = "+str(staffID))
+
+    res = runQuery("INSERT INTO staff_info VALUES("+str(staffID)+",'"+staffName+"','"+staffDob +
+                   "',"+str(staffIDcard)+",'"+staffAddress+"','"+staffPosition+"')")
+
+    if res == []:
+        print("Was able to add staff")
+        if res == []:
+            return '<h5>Staff Successfully Added</h5>\
+			<h6>Staff ID: '+str(staffID)+'</h6>'
+        else:
+            print(res)
+    else:
+        print(res)
+
+    return '<h5>Something Went Wrong</h5>'
+
+
+@app.route('/getStaffInfo', methods=['GET'])
+def staffList():
+    res = runQuery("SELECT * FROM staff_info")
+
+    return render_template('currentstaff.html', staffs=res)
+
+
+@app.route('/setNewStaffInfo', methods=['POST'])
+def setStaffInfo():
+    staffID = request.form['staffID']
+    newStaffName = request.form['newStaffName']
+    newStaffDob = request.form['newStaffDob']
+    newStaffIDcard = request.form['newStaffIDcard']
+    newStaffAddress = request.form['newStaffAddress']
+    newStaffPosition = request.form['newStaffPosition']
+
+    res = runQuery("UPDATE staff_info SET staff_name = '"+newStaffName+"', date_of_birth = '"+newStaffDob+"', ID_card = " +
+                   str(newStaffIDcard)+", address = '"+newStaffAddress+"', position = '"+newStaffPosition+"' WHERE staff_id = "+str(staffID))
+
+    if res == []:
+        return '<h5>Info Successfully Changed</h5>'
+
+    else:
+        print(res)
+    return '<h5>Something Went Wrong</h5>'
+
+
+@app.route('/getStaffInfoForDelete', methods=['GET'])
+def staffList1():
+    res = runQuery("SELECT * FROM staff_info")
+
+    return render_template('currentstaff1.html', staffs=res)
+
+
+@app.route('/deleteStaffInfo', methods=['POST'])
+def deleteStaffInfo():
+    staffID = request.form['staffID']
+    res = runQuery("DELETE FROM staff_info WHERE staff_id = "+str(staffID))
+    if res == []:
+        return '<h5>Info Successfully Deleted</h5>'
+    else:
+        print(res)
+    return '<h5>Something Went Wrong</h5>'
+
+
+@app.route('/getStaffInfo', methods=['POST'])
+def getStaffInfo():
+
+    res = runQuery(
+        "SELECT staff_id,staff_name,position FROM staff_info")
+
+    if res == []:
+        return '<h4>No staff Info Yet </h4>'
+
+    staffs = []
+    for i in res:
+        staffs.append([i[0], i[1], i[2]])
+    return render_template('staffinfo.html', staffs=staffs)
+
+
+@app.route('/searchStaffInfo', methods=['POST'])
+def searchStaffInfo():
+    searchStaffName = request.form['searchStaffName']
+    res = runQuery(
+        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_name = '"+searchStaffName+"'")
+    if res == []:
+        return '<h4>No Staff Info</h4>'
+
+    staffs = []
+    for i in res:
+        staffs.append([i[0], i[1], i[2], i[3], i[4], i[5]])
+    return render_template('searchstaffinfo.html', staffs=staffs)
+
 
 def runQuery(query):
     try:

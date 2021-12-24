@@ -1,0 +1,8 @@
+<h4>Staff Info</h4>
+{% for staff in staffs %}
+<div class="staff">
+<h5>Staff Name: {{ staff[1] }}</h5>
+<h6>Staff Position: {{ staff[2] }}</h6>
+<h6>Staff ID: {{ staff[0] }}</h6>
+</div>
+{% endfor %}
