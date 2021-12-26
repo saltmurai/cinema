@@ -1,0 +1,6 @@
+<h4>Select Staff Listing</h4>
+{% for staff in staffs %}
+<button onclick="showSelectedStaffFunction({{ staff[0] }})">
+	<h5>{{ staff[1]}} / {{ staff[5] }}</h5>
+</button>
+{% endfor %}

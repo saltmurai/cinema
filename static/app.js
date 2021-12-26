@@ -464,7 +464,12 @@ function deleteManagerInfo() {
 		}
 	});
 }
-//demo chia ra
+
+
+
+
+
+//demo bài tập lớn
 //function cho staff
 function StaffOption() {
 	$('#options button ').prop('disabled', true);
@@ -483,6 +488,7 @@ var staffDob = null;
 var staffIDcard = null;
 var staffAddress = null;
 var staffPosition = null;
+//add staff function
 function AddStaff() {
 	$('#options button').prop('disabled', true);
 	$.ajax({
@@ -535,7 +541,7 @@ function filledStaffForm() {
 		});
 	}
 }
-
+//update staff function
 function UpdateStaff() {
 	$('#options button').prop('disabled', true);
 	$.ajax({
@@ -588,6 +594,7 @@ function changeStaffinfo() {
 	});
 }
 
+//delete staff function
 function DeleteStaff() {
 	$('#options button').prop('disabled', true);
 	$.ajax({
@@ -616,17 +623,33 @@ function deleteStaffInfo() {
 	});
 }
 
-function ShowAllStaff() {
+//show staff function
+function ShowAllStaff(){
 	$('#options button').prop('disabled', true);
 	$.ajax({
-		type: 'POST',
-		url: '/getStaffInfo',
+		type: 'GET',
+		url: '/getStaffInfo1',
 		success: function (response) {
-			$('#manager-dynamic-2').html(response);
+			$('#manager-dynamic-3').html(response);
 		}
 	});
 }
 
+function showSelectedStaffFunction(_staffID){
+	staffID = _staffID;
+	$.ajax({
+		type: 'POST',
+		url: '/showSelectedStaffInfo',
+		data: {
+			'staffID': staffID
+		},
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+}
+
+//search staff function
 function SearchStaff() {
 	$('#options button').prop('disabled', true);
 	$('#manager-dynamic-3').html('<input type="text" name="SearchStaffName" placeholder="Search by name"><button onclick="searchStaffinfo()">Search</button>');
@@ -646,4 +669,17 @@ function searchStaffinfo() {
 		}
 	});
 
+}
+
+//function cho member
+
+function MemberOption() {
+	$('#options button ').prop('disabled', true);
+	$.ajax({
+		type: 'POST',
+		url: '/getMemberOption',
+		success: function (reponse) {
+			$('#manager-dynamic-1').html(reponse);
+		}
+	});
 }

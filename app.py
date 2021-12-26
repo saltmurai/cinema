@@ -504,6 +504,14 @@ def deleteManagerInfo():
     return '<h5>Something Went Wrong</h5>'
 
 
+
+
+
+#demo bài tập lớn
+#Route cho staff
+
+
+#Add staff route
 @app.route('/getStaffOption', methods=['POST'])
 def getStaffOption():
     return render_template('Staff.html')
@@ -550,7 +558,7 @@ def insertStaff():
 
     return '<h5>Something Went Wrong</h5>'
 
-
+#Update staff route
 @app.route('/getStaffInfo', methods=['GET'])
 def staffList():
     res = runQuery("SELECT * FROM staff_info")
@@ -577,7 +585,7 @@ def setStaffInfo():
         print(res)
     return '<h5>Something Went Wrong</h5>'
 
-
+#Delete staff route
 @app.route('/getStaffInfoForDelete', methods=['GET'])
 def staffList1():
     res = runQuery("SELECT * FROM staff_info")
@@ -595,22 +603,26 @@ def deleteStaffInfo():
         print(res)
     return '<h5>Something Went Wrong</h5>'
 
+#Show staff route
+@app.route('/getStaffInfo1', methods=['GET'])
+def staffList2():
+    res = runQuery("SELECT * FROM staff_info")
 
-@app.route('/getStaffInfo', methods=['POST'])
-def getStaffInfo():
+    return render_template('currentstaff2.html', staffs=res)
 
+@app.route('/showSelectedStaffInfo', methods=['POST'])
+def showSelectedStaffInfo():
+    staffID = request.form['staffID']
     res = runQuery(
-        "SELECT staff_id,staff_name,position FROM staff_info")
-
-    if res == []:
-        return '<h4>No staff Info Yet </h4>'
+        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_id="+str(staffID))
 
     staffs = []
     for i in res:
-        staffs.append([i[0], i[1], i[2]])
-    return render_template('staffinfo.html', staffs=staffs)
+        staffs.append([i[0], i[1], i[2], i[3], i[4], i[5]])
+    return render_template('searchstaffinfo.html', staffs=staffs)
 
 
+#Search staff route
 @app.route('/searchStaffInfo', methods=['POST'])
 def searchStaffInfo():
     searchStaffName = request.form['searchStaffName']
@@ -625,6 +637,23 @@ def searchStaffInfo():
     return render_template('searchstaffinfo.html', staffs=staffs)
 
 
+
+
+#Route cho Member
+@app.route('/getMemberOption', methods=['POST'])
+def getMemberOption():
+    return render_template('member.html')
+
+
+
+
+
+
+
+
+
+
+#Route sql connection
 def runQuery(query):
     try:
         db = mysql.connector.connect(
