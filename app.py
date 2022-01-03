@@ -8,180 +8,157 @@ from random import randint
 app = Flask(__name__)
 
 
-@app.route("/")
+@app.route('/')
 def renderLoginPage():
-    return render_template("login.html")
+    return render_template('login.html')
 
 
-@app.route("/login", methods=["POST"])
+@app.route('/login', methods=['GET','POST'])
 def verifyAndRenderRespective():
-    username = request.form["username"]
-    password = request.form["password"]
+    username = request.form['username']
+    password = request.form['password']
 
     try:
-        if username == "cashier" and password == "cashier":
 
-            res = runQuery("call delete_old()")
-            return render_template("cashier.html")
+        if username == '1' and password == '1':
 
-        elif username == "manager" and password == "manager":
-
-            res = runQuery("call delete_old()")
-            return render_template("manager.html")
-
-        elif username == "director" and password == "director":
-
-            res = runQuery("call delete_old()")
-            return render_template("director.html")
-
-        elif username == "1" and password == "1":
-
-            res = runQuery("call delete_old()")
-            return render_template("manager2.html")
-
+            res = runQuery('call delete_old()')
+            return render_template('manager2.html')
         else:
-            return render_template("loginfail.html")
+            res = runQuery(
+                "SELECT staff_id,staff_name,address,position FROM staff_info WHERE staff_name = '"+username+"' and address = '"+password+"'")
+            
+            staffs = []
+            for i in res:
+                staffs.append([i[0], i[1], i[2], i[3]])
+            if i[0] == '':
+                return render_template('loginfail.html')
+            else:
+                if i[3] == 'cashier':
+                    res = runQuery('call delete_old()')
+                    return render_template('cashier1.html',staffs=staffs)
+                if i[3] == 'manager':
+                    res = runQuery('call delete_old()')
+                    return render_template('manager2.html')
+
+                
     except Exception as e:
         print(e)
-        return render_template("loginfail.html")
+        return render_template('loginfail.html')
 
 
 # Routes for cashier
-@app.route("/getMoviesShowingOnDate", methods=["POST"])
+@app.route('/getMoviesShowingOnDate', methods=['POST'])
 def moviesOnDate():
-    date = request.form["date"]
+    date = request.form['date']
 
     res = runQuery(
-        "SELECT DISTINCT movie_id,movie_name,type FROM movies NATURAL JOIN shows WHERE Date = '"
-        + date
-        + "'"
-    )
+        "SELECT DISTINCT movie_id,movie_name,type FROM movies NATURAL JOIN shows WHERE Date = '"+date+"'")
 
     if res == []:
-        return "<h4>No Movies Showing</h4>"
+        return '<h4>No Movies Showing</h4>'
     else:
-        return render_template("movies.html", movies=res)
+        return render_template('movies.html', movies=res)
 
 
-@app.route("/getTimings", methods=["POST"])
+@app.route('/getTimings', methods=['POST'])
 def timingsForMovie():
-    date = request.form["date"]
-    movieID = request.form["movieID"]
-    movieType = request.form["type"]
+    date = request.form['date']
+    movieID = request.form['movieID']
+    movieType = request.form['type']
 
-    res = runQuery(
-        "SELECT time FROM shows WHERE Date='"
-        + date
-        + "' and movie_id = "
-        + movieID
-        + " and type ='"
-        + movieType
-        + "'"
-    )
+    res = runQuery("SELECT time FROM shows WHERE Date='"+date +
+                   "' and movie_id = "+movieID+" and type ='"+movieType+"'")
 
     list = []
 
     for i in res:
-        list.append((i[0], int(i[0] / 100), i[0] % 100 if i[0] % 100 != 0 else "00"))
+        list.append((i[0], int(i[0]/100), i[0] %
+                    100 if i[0] % 100 != 0 else '00'))
 
-    return render_template("timings.html", timings=list)
+    return render_template('timings.html', timings=list)
 
 
-@app.route("/getShowID", methods=["POST"])
+@app.route('/getShowID', methods=['POST'])
 def getShowID():
-    date = request.form["date"]
-    movieID = request.form["movieID"]
-    movieType = request.form["type"]
-    time = request.form["time"]
+    date = request.form['date']
+    movieID = request.form['movieID']
+    movieType = request.form['type']
+    time = request.form['time']
 
-    res = runQuery(
-        "SELECT show_id FROM shows WHERE Date='"
-        + date
-        + "' and movie_id = "
-        + movieID
-        + " and type ='"
-        + movieType
-        + "' and time = "
-        + time
-    )
+    res = runQuery("SELECT show_id FROM shows WHERE Date='"+date +
+                   "' and movie_id = "+movieID+" and type ='"+movieType+"' and time = "+time)
     return jsonify({"showID": res[0][0]})
 
 
-@app.route("/getAvailableSeats", methods=["POST"])
+@app.route('/getAvailableSeats', methods=['POST'])
 def getSeating():
-    showID = request.form["showID"]
+    showID = request.form['showID']
 
     res = runQuery(
-        "SELECT class,no_of_seats FROM shows NATURAL JOIN halls WHERE show_id = "
-        + showID
-    )
+        "SELECT class,no_of_seats FROM shows NATURAL JOIN halls WHERE show_id = "+showID)
 
     totalGold = 0
     totalStandard = 0
 
     for i in res:
-        if i[0] == "gold":
+        if i[0] == 'gold':
             totalGold = i[1]
-        if i[0] == "standard":
+        if i[0] == 'standard':
             totalStandard = i[1]
 
-    res = runQuery("SELECT seat_no FROM booked_tickets WHERE show_id = " + showID)
+    res = runQuery(
+        "SELECT seat_no FROM new_booked_tickets WHERE show_id = "+showID)
 
     goldSeats = []
     standardSeats = []
 
     for i in range(1, totalGold + 1):
-        goldSeats.append([i, ""])
+        goldSeats.append([i, ''])
 
     for i in range(1, totalStandard + 1):
-        standardSeats.append([i, ""])
+        standardSeats.append([i, ''])
 
     for i in res:
         if i[0] > 1000:
-            goldSeats[i[0] % 1000 - 1][1] = "disabled"
+            goldSeats[i[0] % 1000 - 1][1] = 'disabled'
         else:
-            standardSeats[i[0] - 1][1] = "disabled"
+            standardSeats[i[0] - 1][1] = 'disabled'
 
-    return render_template(
-        "seating.html", goldSeats=goldSeats, standardSeats=standardSeats
-    )
+    return render_template('seating.html', goldSeats=goldSeats, standardSeats=standardSeats)
 
 
-@app.route("/getPrice", methods=["POST"])
+@app.route('/getPrice', methods=['POST'])
 def getPriceForClass():
-    showID = request.form["showID"]
-    seatClass = request.form["seatClass"]
+    showID = request.form['showID']
+    seatClass = request.form['seatClass']
 
     res = runQuery("INSERT INTO halls VALUES(-1,'-1',-1)")
 
     res = runQuery("DELETE FROM halls WHERE hall_id = -1")
 
     res = runQuery(
-        "SELECT price FROM shows NATURAL JOIN price_listing WHERE show_id = " + showID
-    )
+        "SELECT price FROM shows NATURAL JOIN price_listing WHERE show_id = "+showID)
 
     if res == []:
-        return "<h5>Prices Have Not Been Assigned To This Show, Try Again Later</h5>"
+        return '<h5>Prices Have Not Been Assigned To This Show, Try Again Later</h5>'
 
     price = int(res[0][0])
-    if seatClass == "gold":
+    if seatClass == 'gold':
         price = price * 1.5
 
-    return (
-        "<h5>Ticket Price: ₹ "
-        + str(price)
-        + '</h5>\
+    return '<h5>Ticket Price: ₹ '+str(price)+'</h5>\
 	<button onclick="confirmBooking()">Confirm</button>'
-    )
 
 
-@app.route("/insertBooking", methods=["POST"])
+@app.route('/insertBooking', methods=['POST'])
 def createBooking():
-    showID = request.form["showID"]
-    seatNo = request.form["seatNo"]
-    seatClass = request.form["seatClass"]
+    showID = request.form['showID']
+    staffID= request.form['staffID']
+    seatNo = request.form['seatNo']
+    seatClass = request.form['seatClass']
 
-    if seatClass == "gold":
+    if seatClass == 'gold':
         seatNo = int(seatNo) + 1000
 
     ticketNo = 0
@@ -190,216 +167,160 @@ def createBooking():
     while res != []:
         ticketNo = randint(0, 2147483646)
         res = runQuery(
-            "SELECT ticket_no FROM booked_tickets WHERE ticket_no = " + str(ticketNo)
-        )
+            "SELECT ticket_no FROM new_booked_tickets WHERE ticket_no = "+str(ticketNo))
 
-    res = runQuery(
-        "INSERT INTO booked_tickets VALUES("
-        + str(ticketNo)
-        + ","
-        + showID
-        + ","
-        + str(seatNo)
-        + ")"
-    )
+    res = runQuery("INSERT INTO new_booked_tickets VALUES(" +
+                   str(ticketNo)+","+showID+","+staffID+","+str(seatNo)+")")
 
     if res == []:
-        return (
-            "<h5>Ticket Successfully Booked</h5>\
-		<h6>Ticket Number: "
-            + str(ticketNo)
-            + "</h6>"
-        )
+        return '<h5>Ticket Successfully Booked</h5>\
+		<h6>Ticket Number: '+str(ticketNo)+'</h6>'
 
 
 # Routes for manager
-@app.route("/getShowsShowingOnDate", methods=["POST"])
+@app.route('/getShowsShowingOnDate', methods=['POST'])
 def getShowsOnDate():
-    date = request.form["date"]
+    date = request.form['date']
 
     res = runQuery(
-        "SELECT show_id,movie_name,type,time FROM shows NATURAL JOIN movies WHERE Date = '"
-        + date
-        + "'"
-    )
+        "SELECT show_id,movie_name,type,time FROM shows NATURAL JOIN movies WHERE Date = '"+date+"'")
 
     if res == []:
-        return "<h4>No Shows Showing</h4>"
+        return '<h4>No Shows Showing</h4>'
     else:
         shows = []
         for i in res:
             x = i[3] % 100
             if i[3] % 100 == 0:
-                x = "00"
+                x = '00'
             shows.append([i[0], i[1], i[2], int(i[3] / 100), x])
 
-        return render_template("shows.html", shows=shows)
+        return render_template('shows.html', shows=shows)
 
 
-@app.route("/getBookedWithShowID", methods=["POST"])
+@app.route('/getBookedWithShowID', methods=['POST'])
 def getBookedTickets():
-    showID = request.form["showID"]
+    showID = request.form['showID']
 
     res = runQuery(
-        "SELECT ticket_no,seat_no FROM booked_tickets WHERE show_id = "
-        + showID
-        + " order by seat_no"
-    )
+        "SELECT ticket_no,seat_no FROM booked_tickets WHERE show_id = "+showID+" order by seat_no")
 
     if res == []:
-        return "<h5>No Bookings</h5>"
+        return '<h5>No Bookings</h5>'
 
     tickets = []
     for i in res:
         if i[1] > 1000:
-            tickets.append([i[0], i[1] - 1000, "Gold"])
+            tickets.append([i[0], i[1] - 1000, 'Gold'])
         else:
-            tickets.append([i[0], i[1], "Standard"])
+            tickets.append([i[0], i[1], 'Standard'])
 
-    return render_template("bookedtickets.html", tickets=tickets)
+    return render_template('bookedtickets.html', tickets=tickets)
 
 
-@app.route("/fetchMovieInsertForm", methods=["GET"])
+@app.route('/fetchMovieInsertForm', methods=['GET'])
 def getMovieForm():
-    return render_template("movieform.html")
+    return render_template('movieform.html')
 
 
-@app.route("/insertMovie", methods=["POST"])
+@app.route('/insertMovie', methods=['POST'])
 def insertMovie():
-    movieName = request.form["movieName"]
-    movieLen = request.form["movieLen"]
-    movieLang = request.form["movieLang"]
-    types = request.form["types"]
-    startShowing = request.form["startShowing"]
-    endShowing = request.form["endShowing"]
-    res = runQuery("SELECT * FROM movies")
+    movieName = request.form['movieName']
+    movieLen = request.form['movieLen']
+    movieLang = request.form['movieLang']
+    types = request.form['types']
+    startShowing = request.form['startShowing']
+    endShowing = request.form['endShowing']
+    res = runQuery('SELECT * FROM movies')
 
     for i in res:
-        if (
-            i[1] == movieName
-            and i[2] == int(movieLen)
-            and i[3] == movieLang
-            and i[4].strftime("%Y/%m/%d") == startShowing
-            and i[5].strftime("%Y/%m/%d") == endShowing
-        ):
-            return "<h5>The Exact Same Movie Already Exists</h5>"
+        if i[1] == movieName and i[2] == int(movieLen) and i[3] == movieLang \
+                and i[4].strftime('%Y/%m/%d') == startShowing and i[5].strftime('%Y/%m/%d') == endShowing:
+            return '<h5>The Exact Same Movie Already Exists</h5>'
 
     movieID = 0
     res = None
 
     while res != []:
         movieID = randint(0, 2147483646)
-        res = runQuery("SELECT movie_id FROM movies WHERE movie_id = " + str(movieID))
+        res = runQuery(
+            "SELECT movie_id FROM movies WHERE movie_id = "+str(movieID))
 
-    res = runQuery(
-        "INSERT INTO movies VALUES("
-        + str(movieID)
-        + ",'"
-        + movieName
-        + "',"
-        + movieLen
-        + ",'"
-        + movieLang
-        + "','"
-        + startShowing
-        + "','"
-        + endShowing
-        + "')"
-    )
+    res = runQuery("INSERT INTO movies VALUES("+str(movieID)+",'"+movieName+"',"+movieLen +
+                   ",'"+movieLang+"','"+startShowing+"','"+endShowing+"')")
 
     if res == []:
         print("Was able to add movie")
-        subTypes = types.split(" ")
+        subTypes = types.split(' ')
 
         while len(subTypes) < 3:
-            subTypes.append("NUL")
+            subTypes.append('NUL')
 
-        res = runQuery(
-            "INSERT INTO types VALUES("
-            + str(movieID)
-            + ",'"
-            + subTypes[0]
-            + "','"
-            + subTypes[1]
-            + "','"
-            + subTypes[2]
-            + "')"
-        )
+        res = runQuery("INSERT INTO types VALUES("+str(movieID) +
+                       ",'"+subTypes[0]+"','"+subTypes[1]+"','"+subTypes[2]+"')")
 
         if res == []:
-            return (
-                "<h5>Movie Successfully Added</h5>\
-			<h6>Movie ID: "
-                + str(movieID)
-                + "</h6>"
-            )
+            return '<h5>Movie Successfully Added</h5>\
+			<h6>Movie ID: '+str(movieID)+'</h6>'
         else:
             print(res)
     else:
         print(res)
 
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
 
-@app.route("/getValidMovies", methods=["POST"])
+@app.route('/getValidMovies', methods=['POST'])
 def validMovies():
-    showDate = request.form["showDate"]
+    showDate = request.form['showDate']
 
-    res = runQuery(
-        "SELECT movie_id,movie_name,length,language FROM movies WHERE show_start <= '"
-        + showDate
-        + "' and show_end >= '"
-        + showDate
-        + "'"
-    )
+    res = runQuery("SELECT movie_id,movie_name,length,language FROM movies WHERE show_start <= '"+showDate +
+                   "' and show_end >= '"+showDate+"'")
 
     if res == []:
-        return "<h5>No Movies Available for Showing On Selected Date</h5>"
+        return '<h5>No Movies Available for Showing On Selected Date</h5>'
 
     movies = []
 
     for i in res:
-        subTypes = runQuery("SELECT * FROM types WHERE movie_id = " + str(i[0]))
+        subTypes = runQuery("SELECT * FROM types WHERE movie_id = "+str(i[0]))
 
         t = subTypes[0][1]
 
-        if subTypes[0][2] != "NUL":
-            t = t + " " + subTypes[0][2]
-        if subTypes[0][3] != "NUL":
-            t = t + " " + subTypes[0][3]
+        if subTypes[0][2] != 'NUL':
+            t = t + ' ' + subTypes[0][2]
+        if subTypes[0][3] != 'NUL':
+            t = t + ' ' + subTypes[0][3]
 
         movies.append((i[0], i[1], t, i[2], i[3]))
 
-    return render_template("validmovies.html", movies=movies)
+    return render_template('validmovies.html', movies=movies)
 
 
-@app.route("/getHallsAvailable", methods=["POST"])
+@app.route('/getHallsAvailable', methods=['POST'])
 def getHalls():
-    movieID = request.form["movieID"]
-    showDate = request.form["showDate"]
-    showTime = request.form["showTime"]
+    movieID = request.form['movieID']
+    showDate = request.form['showDate']
+    showTime = request.form['showTime']
 
-    res = runQuery("SELECT length FROM movies WHERE movie_id = " + movieID)
+    res = runQuery("SELECT length FROM movies WHERE movie_id = "+movieID)
 
     movieLen = res[0][0]
 
     showTime = int(showTime)
 
-    showTime = int(showTime / 100) * 60 + (showTime % 100)
+    showTime = int(showTime / 100)*60 + (showTime % 100)
 
     endTime = showTime + movieLen
 
     res = runQuery(
-        "SELECT hall_id, length, time FROM shows NATURAL JOIN movies WHERE Date = '"
-        + showDate
-        + "'"
-    )
+        "SELECT hall_id, length, time FROM shows NATURAL JOIN movies WHERE Date = '"+showDate+"'")
 
     unavailableHalls = set()
 
     for i in res:
 
-        x = int(i[2] / 100) * 60 + (i[2] % 100)
+        x = int(i[2] / 100)*60 + (i[2] % 100)
 
         y = x + i[1]
 
@@ -421,131 +342,96 @@ def getHalls():
 
     if availableHalls == set():
 
-        return "<h5>No Halls Available On Given Date And Time</h5>"
+        return '<h5>No Halls Available On Given Date And Time</h5>'
 
-    return render_template("availablehalls.html", halls=availableHalls)
+    return render_template('availablehalls.html', halls=availableHalls)
 
 
-@app.route("/insertShow", methods=["POST"])
+@app.route('/insertShow', methods=['POST'])
 def insertShow():
-    hallID = request.form["hallID"]
-    movieID = request.form["movieID"]
-    movieType = request.form["movieType"]
-    showDate = request.form["showDate"]
-    showTime = request.form["showTime"]
+    hallID = request.form['hallID']
+    movieID = request.form['movieID']
+    movieType = request.form['movieType']
+    showDate = request.form['showDate']
+    showTime = request.form['showTime']
 
     showID = 0
     res = None
 
     while res != []:
         showID = randint(0, 2147483646)
-        res = runQuery("SELECT show_id FROM shows WHERE show_id = " + str(showID))
+        res = runQuery(
+            "SELECT show_id FROM shows WHERE show_id = "+str(showID))
 
-    res = runQuery(
-        "INSERT INTO shows VALUES("
-        + str(showID)
-        + ","
-        + movieID
-        + ","
-        + hallID
-        + ",'"
-        + movieType
-        + "',"
-        + showTime
-        + ",'"
-        + showDate
-        + "',"
-        + "NULL"
-        + ")"
-    )
+    res = runQuery("INSERT INTO shows VALUES("+str(showID)+","+movieID+","+hallID +
+                   ",'"+movieType+"',"+showTime+",'"+showDate+"',"+'NULL'+")")
 
     print(res)
 
     if res == []:
-        return (
-            "<h5>Show Successfully Scheduled</h5>\
-		<h6>Show ID: "
-            + str(showID)
-            + "</h6>"
-        )
+        return '<h5>Show Successfully Scheduled</h5>\
+		<h6>Show ID: '+str(showID)+'</h6>'
 
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
 
-@app.route("/getPriceList", methods=["GET"])
+@app.route('/getPriceList', methods=['GET'])
 def priceList():
     res = runQuery("SELECT * FROM price_listing ORDER BY type")
 
-    sortedDays = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-    ]
+    sortedDays = ['Sunday', 'Monday', 'Tuesday',
+                  'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
     res = sorted(res, key=lambda x: sortedDays.index(x[2]))
 
-    return render_template("currentprices.html", prices=res)
+    return render_template('currentprices.html', prices=res)
 
 
-@app.route("/setNewPrice", methods=["POST"])
+@app.route('/setNewPrice', methods=['POST'])
 def setPrice():
-    priceID = request.form["priceID"]
-    newPrice = request.form["newPrice"]
+    priceID = request.form['priceID']
+    newPrice = request.form['newPrice']
 
-    res = runQuery(
-        "UPDATE price_listing SET price = "
-        + str(newPrice)
-        + " WHERE price_id = "
-        + str(priceID)
-    )
+    res = runQuery("UPDATE price_listing SET price = " +
+                   str(newPrice)+" WHERE price_id = "+str(priceID))
 
     if res == []:
-        return (
-            "<h5>Price Successfully Changed</h5>\
-			<h6>Standard: ₹ "
-            + newPrice
-            + "</h6>\
-			<h6>Gold: ₹ "
-            + str(int(int(newPrice) * 1.5))
-            + "</h6>"
-        )
+        return '<h5>Price Successfully Changed</h5>\
+			<h6>Standard: ₹ '+newPrice+'</h6>\
+			<h6>Gold: ₹ '+str(int(int(newPrice) * 1.5))+'</h6>'
 
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
-
+    return '<h5>Something Went Wrong</h5>'
 
 # Routes for director
 
 
-@app.route("/getManagerInfo", methods=["POST"])
+@app.route('/getManagerInfo', methods=['POST'])
 def getManagerInfo():
 
-    res = runQuery("SELECT manager_id,manager_name,age FROM manager_info")
+    res = runQuery(
+        "SELECT manager_id,manager_name,age FROM manager_info")
 
     if res == []:
-        return "<h4>No Manager Info Yet </h4>"
+        return '<h4>No Manager Info Yet </h4>'
 
     managers = []
     for i in res:
         managers.append([i[0], i[1], i[2]])
-    return render_template("managerinfo.html", managers=managers)
+    return render_template('managerinfo.html', managers=managers)
 
 
-@app.route("/InsertManager", methods=["POST"])
+@app.route('/InsertManager', methods=['POST'])
 def addManager():
-    managerName = request.form["managerName"]
-    managerAge = request.form["managerAge"]
-    res = runQuery("SELECT * FROM manager_info")
+    managerName = request.form['managerName']
+    managerAge = request.form['managerAge']
+    res = runQuery('SELECT * FROM manager_info')
     for i in res:
         if i[1] == managerName and i[2] == int(managerAge):
-            return "<h5>the exact same manager have already exit</h5>"
+            return '<h5>the exact same manager have already exit</h5>'
 
     managerID = 0
     res = None
@@ -553,123 +439,103 @@ def addManager():
     while res != []:
         managerID = randint(0, 2147483646)
         res = runQuery(
-            "SELECT manager_id FROM manager_info WHERE manager_id = " + str(managerID)
-        )
+            "SELECT manager_id FROM manager_info WHERE manager_id = "+str(managerID))
 
-    res = runQuery(
-        "INSERT INTO manager_info VALUES("
-        + str(managerID)
-        + ",'"
-        + managerName
-        + "',"
-        + str(managerAge)
-        + ")"
-    )
+    res = runQuery("INSERT INTO manager_info VALUES(" +
+                   str(managerID)+",'"+managerName+"',"+str(managerAge)+")")
 
     if res == []:
         print("Was able to add manager")
         if res == []:
-            return (
-                "<h5>Manager Successfully Added</h5>\
-			<h6>Manager ID: "
-                + str(managerID)
-                + "</h6>"
-            )
+            return '<h5>Manager Successfully Added</h5>\
+			<h6>Manager ID: '+str(managerID)+'</h6>'
         else:
             print(res)
     else:
         print(res)
 
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
 
-@app.route("/fectchManagerInsertForm", methods=["GET"])
+@app.route('/fectchManagerInsertForm', methods=['GET'])
 def getManagerForm():
-    return render_template("managerform.html")
+    return render_template('managerform.html')
 
 
-@app.route("/getManagerInfo", methods=["GET"])
+@app.route('/getManagerInfo', methods=['GET'])
 def managerList():
     res = runQuery("SELECT * FROM manager_info")
 
-    return render_template("currentmanagers.html", managers=res)
+    return render_template('currentmanagers.html', managers=res)
 
 
-@app.route("/setNewInfo", methods=["POST"])
+@app.route('/setNewInfo', methods=['POST'])
 def setManagerInfo():
-    managerID = request.form["managerID"]
-    newName = request.form["newName"]
-    newAge = request.form["newAge"]
+    managerID = request.form['managerID']
+    newName = request.form['newName']
+    newAge = request.form['newAge']
 
-    res = runQuery(
-        "UPDATE manager_info SET manager_name = '"
-        + newName
-        + "', age = "
-        + str(newAge)
-        + " WHERE manager_id = "
-        + str(managerID)
-    )
+    res = runQuery("UPDATE manager_info SET manager_name = '"+newName +
+                   "', age = "+str(newAge)+" WHERE manager_id = "+str(managerID))
 
     if res == []:
-        return (
-            "<h5>Info Successfully Changed</h5>\
-			<h6>NewName/Age: "
-            + newName
-            + "/"
-            + newAge
-            + " </h6>"
-        )
+        return '<h5>Info Successfully Changed</h5>\
+			<h6>NewName/Age: '+newName+'/'+newAge+' </h6>'
 
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
 
-@app.route("/getManagerInfoForDelete", methods=["GET"])
+@app.route('/getManagerInfoForDelete', methods=['GET'])
 def managerList1():
     res = runQuery("SELECT * FROM manager_info")
 
-    return render_template("currentmanagers1.html", managers=res)
+    return render_template('currentmanagers1.html', managers=res)
 
 
-@app.route("/deleteInfo", methods=["POST"])
+@app.route('/deleteInfo', methods=['POST'])
 def deleteManagerInfo():
-    managerID = request.form["managerID"]
-    res = runQuery("DELETE FROM manager_info WHERE manager_id = " + str(managerID))
+    managerID = request.form['managerID']
+    res = runQuery(
+        "DELETE FROM manager_info WHERE manager_id = "+str(managerID))
     if res == []:
-        return "<h5>Info Successfully Deleted</h5>"
+        return '<h5>Info Successfully Deleted</h5>'
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
 
-# demo bài tập lớn
-# Route cho staff
 
 
-# Add staff route
-@app.route("/getStaffOption", methods=["POST"])
+
+#demo bài tập lớn
+#Route cho staff
+
+
+#Add staff route
+@app.route('/getStaffOption', methods=['POST'])
 def getStaffOption():
-    return render_template("Staff.html")
+    return render_template('Staff.html')
 
 
-@app.route("/fectchStaffInsertForm", methods=["GET"])
+@app.route('/fectchStaffInsertForm', methods=['GET'])
 def getStaffForm():
-    return render_template("staffform.html")
+    return render_template('staffform.html')
 
 
-@app.route("/InsertStaff", methods=["POST"])
+@app.route('/InsertStaff', methods=['POST'])
 def insertStaff():
-    staffName = request.form["staffName"]
-    staffDob = request.form["staffDob"]
-    staffIDcard = request.form["staffIDcard"]
-    staffAddress = request.form["staffAddress"]
-    staffPosition = request.form["staffPosition"]
-    res = runQuery("SELECT * FROM staff_info")
+    staffName = request.form['staffName']
+    staffDob = request.form['staffDob']
+    staffIDcard = request.form['staffIDcard']
+    staffAddress = request.form['staffAddress']
+    staffPosition = request.form['staffPosition']
+    res = runQuery('SELECT * FROM staff_info')
 
     for i in res:
         if i[1] == staffName and i[3] == staffIDcard:
-            return "<h5>The Staff Info Already Exists</h5>"
+            return '<h5>The Staff Info Already Exists</h5>'
 
     staffID = 0
     res = None
@@ -677,153 +543,126 @@ def insertStaff():
     while res != []:
         staffID = randint(0, 2147483646)
         res = runQuery(
-            "SELECT staff_id FROM staff_info WHERE staff_id = " + str(staffID)
-        )
+            "SELECT staff_id FROM staff_info WHERE staff_id = "+str(staffID))
 
-    res = runQuery(
-        "INSERT INTO staff_info VALUES("
-        + str(staffID)
-        + ",'"
-        + staffName
-        + "','"
-        + staffDob
-        + "',"
-        + str(staffIDcard)
-        + ",'"
-        + staffAddress
-        + "','"
-        + staffPosition
-        + "')"
-    )
+    res = runQuery("INSERT INTO staff_info VALUES("+str(staffID)+",'"+staffName+"','"+staffDob +
+                   "',"+str(staffIDcard)+",'"+staffAddress+"','"+staffPosition+"')")
 
     if res == []:
         print("Was able to add staff")
         if res == []:
-            return (
-                "<h5>Staff Successfully Added</h5>\
-			<h6>Staff ID: "
-                + str(staffID)
-                + "</h6>"
-            )
+            return '<h5>Staff Successfully Added</h5>\
+			<h6>Staff ID: '+str(staffID)+'</h6>'
         else:
             print(res)
     else:
         print(res)
 
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
-
-# Update staff route
-@app.route("/getStaffInfo", methods=["GET"])
+#Update staff route
+@app.route('/getStaffInfo', methods=['GET'])
 def staffList():
     res = runQuery("SELECT * FROM staff_info")
 
-    return render_template("currentstaff.html", staffs=res)
+    return render_template('currentstaff.html', staffs=res)
 
 
-@app.route("/setNewStaffInfo", methods=["POST"])
+@app.route('/setNewStaffInfo', methods=['POST'])
 def setStaffInfo():
-    staffID = request.form["staffID"]
-    newStaffName = request.form["newStaffName"]
-    newStaffDob = request.form["newStaffDob"]
-    newStaffIDcard = request.form["newStaffIDcard"]
-    newStaffAddress = request.form["newStaffAddress"]
-    newStaffPosition = request.form["newStaffPosition"]
+    staffID = request.form['staffID']
+    newStaffName = request.form['newStaffName']
+    newStaffDob = request.form['newStaffDob']
+    newStaffIDcard = request.form['newStaffIDcard']
+    newStaffAddress = request.form['newStaffAddress']
+    newStaffPosition = request.form['newStaffPosition']
 
-    res = runQuery(
-        "UPDATE staff_info SET staff_name = '"
-        + newStaffName
-        + "', date_of_birth = '"
-        + newStaffDob
-        + "', ID_card = "
-        + str(newStaffIDcard)
-        + ", address = '"
-        + newStaffAddress
-        + "', position = '"
-        + newStaffPosition
-        + "' WHERE staff_id = "
-        + str(staffID)
-    )
+    res = runQuery("UPDATE staff_info SET staff_name = '"+newStaffName+"', date_of_birth = '"+newStaffDob+"', ID_card = " +
+                   str(newStaffIDcard)+", address = '"+newStaffAddress+"', position = '"+newStaffPosition+"' WHERE staff_id = "+str(staffID))
 
     if res == []:
-        return "<h5>Info Successfully Changed</h5>"
+        return '<h5>Info Successfully Changed</h5>'
 
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
-
-# Delete staff route
-@app.route("/getStaffInfoForDelete", methods=["GET"])
+#Delete staff route
+@app.route('/getStaffInfoForDelete', methods=['GET'])
 def staffList1():
     res = runQuery("SELECT * FROM staff_info")
 
-    return render_template("currentstaff1.html", staffs=res)
+    return render_template('currentstaff1.html', staffs=res)
 
 
-@app.route("/deleteStaffInfo", methods=["POST"])
+@app.route('/deleteStaffInfo', methods=['POST'])
 def deleteStaffInfo():
-    staffID = request.form["staffID"]
-    res = runQuery("DELETE FROM staff_info WHERE staff_id = " + str(staffID))
+    staffID = request.form['staffID']
+    res = runQuery("DELETE FROM staff_info WHERE staff_id = "+str(staffID))
     if res == []:
-        return "<h5>Info Successfully Deleted</h5>"
+        return '<h5>Info Successfully Deleted</h5>'
     else:
         print(res)
-    return "<h5>Something Went Wrong</h5>"
+    return '<h5>Something Went Wrong</h5>'
 
-
-# Show staff route
-@app.route("/getStaffInfo1", methods=["GET"])
+#Show staff route
+@app.route('/getStaffInfo1', methods=['GET'])
 def staffList2():
     res = runQuery("SELECT * FROM staff_info")
 
-    return render_template("currentstaff2.html", staffs=res)
+    return render_template('currentstaff2.html', staffs=res)
 
-
-@app.route("/showSelectedStaffInfo", methods=["POST"])
+@app.route('/showSelectedStaffInfo', methods=['POST'])
 def showSelectedStaffInfo():
-    staffID = request.form["staffID"]
+    staffID = request.form['staffID']
     res = runQuery(
-        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_id="
-        + str(staffID)
-    )
+        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_id="+str(staffID))
 
     staffs = []
     for i in res:
         staffs.append([i[0], i[1], i[2], i[3], i[4], i[5]])
-    return render_template("searchstaffinfo.html", staffs=staffs)
+    return render_template('searchstaffinfo.html', staffs=staffs)
 
 
-# Search staff route
-@app.route("/searchStaffInfo", methods=["POST"])
+#Search staff route
+@app.route('/searchStaffInfo', methods=['POST'])
 def searchStaffInfo():
-    searchStaffName = request.form["searchStaffName"]
+    searchStaffName = request.form['searchStaffName']
     res = runQuery(
-        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_name = '"
-        + searchStaffName
-        + "'"
-    )
+        "SELECT staff_id,staff_name,date_of_birth,ID_card,address,position FROM staff_info WHERE staff_name = '"+searchStaffName+"'")
     if res == []:
-        return "<h4>No Staff Info</h4>"
+        return '<h4>No Staff Info</h4>'
 
     staffs = []
     for i in res:
         staffs.append([i[0], i[1], i[2], i[3], i[4], i[5]])
-    return render_template("searchstaffinfo.html", staffs=staffs)
+    return render_template('searchstaffinfo.html', staffs=staffs)
 
 
-# Route cho Member
-@app.route("/getMemberOption", methods=["POST"])
+
+
+#Route cho Member
+@app.route('/getMemberOption', methods=['POST'])
 def getMemberOption():
-    return render_template("member.html")
+    return render_template('member.html')
 
 
-# Route sql connection
+
+
+
+
+
+
+
+
+#Route sql connection
 def runQuery(query):
     try:
         db = mysql.connector.connect(
-            host="localhost", database="db_theatre", user="root", password="123456"
-        )
+            host='localhost',
+            database='db_theatre',
+            user='root',
+            password='123456')
 
         if db.is_connected():
             print("Connected to MySQL, running query: ", query)
@@ -851,4 +690,4 @@ def runQuery(query):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run(host='0.0.0.0')

@@ -116,10 +116,12 @@ function selectSeat(no, sclass) {
 	});
 }
 function confirmBooking() {
+	var staffID = document.getElementById('staff-id').getAttribute('data-value');
 	$.ajax({
 		type: 'POST',
 		url: '/insertBooking',
 		data: {
+			'staffID':staffID,
 			'showID': showID,
 			'seatNo': seatNo,
 			'seatClass': seatClass
