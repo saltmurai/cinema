@@ -170,70 +170,7 @@ function selectShow(mshowID) {
 		}
 	});
 }
-function insertMovie() {
-	$('#options button').prop('disabled', true);
-	$.ajax({
-		type: 'GET',
-		url: '/fetchMovieInsertForm',
-		success: function (response) {
-			$('#manager-dynamic-1').html(response);
-			$('#datepicker-manager-2').pickadate({
-				formatSubmit: 'yyyy/mm/dd',
-				hiddenName: true,
-				onSet: function (event) {
-					if (event.select) {
-						startShowing = this.get('select', 'yyyy/mm/dd');
-					}
-				}
-			});
-			$('#datepicker-manager-3').pickadate({
-				formatSubmit: 'yyyy/mm/dd',
-				hiddenName: true,
-				onSet: function (event) {
-					if (event.select) {
-						endShowing = this.get('select', 'yyyy/mm/dd');
-					}
-				}
-			});
-		}
-	});
-}
-function filledMovieForm() {
-	availTypes = $('[name="movieTypes"]')[0].value.toUpperCase().trim();
-	movieName = $('[name="movieName"]')[0].value;
-	movieLang = $('[name="movieLang"]')[0].value;
-	movieLen = $('[name="movieLen"]')[0].value;
-	types = ($('[name="movieTypes"]')[0].value.toUpperCase().trim()).split(' ');
-	atleastTypes = ['2D', '3D', '4DX'];
-	allTypes = [undefined].concat(atleastTypes);
-	if ($('#datepicker-manager-2')[0].value == '' || $('#datepicker-manager-3')[0].value == '' ||
-		movieName == '' || movieLang == '' || movieLen == '' || $('[name="movieTypes"]')[0].value == '')
-		$('#manager-dynamic-2').html('<h5>Please Fill In All Fields</h5>');
-	else if (!(atleastTypes.includes(types[0]) && allTypes.includes(types[1]) && allTypes.includes(types[2])))
-		$('#manager-dynamic-2').html('<h5>Invalid Format For Movie Types</h5>');
-	else if (!$.isNumeric(movieLen))
-		$('#manager-dynamic-2').html('<h5>Movie Length Needs To Be A Number</h5>');
-	else if (Date.parse(startShowing) > Date.parse(endShowing))
-		$('#manager-dynamic-2').html("<h5>Premiere Date Must Be Before/On Last Date In Theatres</h5>");
-	else {
-		movieLen = parseInt(movieLen, 10);
-		$.ajax({
-			type: 'POST',
-			url: '/insertMovie',
-			data: {
-				'movieName': movieName,
-				'movieLen': movieLen,
-				'movieLang': movieLang,
-				'types': availTypes,
-				'startShowing': startShowing,
-				'endShowing': endShowing
-			},
-			success: function (response) {
-				$('#manager-dynamic-2').html(response);
-			}
-		});
-	}
-}
+
 function createShow() {
 	$('#options button').prop('disabled', true);
 	$('#manager-dynamic-1').html('<input id="datepicker-manager-3" placeholder="Pick a date"><input id="timepicker-manager-1" placeholder="Pick a time"><button onclick="getValidMovies()">Submit</button>');
@@ -348,131 +285,12 @@ function changePrice() {
 	});
 }
 
-//Function for director
-
-var managerName = null;
-var managerAge = null;
-var managerID = null;
-function addManager() {
-	$('#options button').prop('disabled', true);
-	$.ajax({
-		type: 'GET',
-		url: '/fectchManagerInsertForm',
-		success: function (response) {
-			$('#manager-dynamic-1').html(response);
-		}
-	});
-}
-
-
-function filledManagerForm() {
-	managerName = $('[name="managerName"]')[0].value;
-	managerAge = $('[name="managerAge"]')[0].value;
-	if (managerName == '' || managerAge == '') {
-		$('#manager-dynamic-2').html('<h5>Please Fill In All Fields</h5>');
-	}
-	else if (!$.isNumeric(managerAge)) {
-		$('#manager-dynamic-2').html('<h5>Age Need To Be A Number</h5>');
-	}
-	else {
-		managerAge = parseInt(managerAge, 10);
-		$.ajax({
-			type: 'POST',
-			url: '/InsertManager',
-			data: {
-				'managerName': managerName,
-				'managerAge': managerAge
-			},
-			success: function (response) {
-				$('#manager-dynamic-2').html(response);
-			}
-		});
-	}
-}
-
-
-function showManager() {
-	$('#options button').prop('disabled', true);
-	$.ajax({
-		type: 'POST',
-		url: '/getManagerInfo',
-		success: function (response) {
-			$('#manager-dynamic-1').html(response);
-		}
-	});
-}
-
-function updateManager() {
-	$('#options button').prop('disabled', true);
-	$.ajax({
-		type: 'GET',
-		url: '/getManagerInfo',
-		success: function (response) {
-			$('#manager-dynamic-1').html(response);
-		}
-	});
-}
-
-function updateManagerFunction(_managerID) {
-	managerID = _managerID;
-	$('#manager-dynamic-1 button').prop('disabled', true);
-	$('#manager-dynamic-2').html('<input type="text" name="new_name" placeholder="New name for manager ">');
-	$('#manager-dynamic-3').html('<input type="number" placeholder="New age for manager "><button onclick="changeManagerInfo()">Change</button>')
-
-}
-
-function changeManagerInfo() {
-	newName = $('#manager-dynamic-2 input')[0].value;
-	newAge = $('#manager-dynamic-3 input')[0].value;
-	$.ajax({
-		type: 'POST',
-		url: '/setNewInfo',
-		data: {
-			'managerID': managerID,
-			'newName': newName,
-			'newAge': newAge
-		},
-		success: function (response) {
-			$('#manager-dynamic-4').html(response);
-		}
-	});
-}
-
-function deleteManager() {
-	$('#options button').prop('disabled', true);
-	$.ajax({
-		type: 'GET',
-		url: '/getManagerInfoForDelete',
-		success: function (response) {
-			$('#manager-dynamic-1').html(response);
-		}
-	});
-}
-
-function deleteManagerFunction(_managerID) {
-	managerID = _managerID;
-	$('#manager-dynamic-1 button').prop('disabled', true);
-	$('#manager-dynamic-2').html('<button onclick="deleteManagerInfo()">Delete</button>')
-
-}
-
-function deleteManagerInfo() {
-	$.ajax({
-		type: 'POST',
-		url: '/deleteInfo',
-		data: { 'managerID': managerID },
-		success: function (response) {
-			$('#manager-dynamic-3').html(response);
-		}
-	});
-}
 
 
 
 
-
-//demo bài tập lớn
-//function cho staff
+//demo bai tap lon
+// function for staff
 function StaffOption() {
 	$('#options button ').prop('disabled', true);
 	$.ajax({
@@ -487,9 +305,13 @@ function StaffOption() {
 var staffID = null;
 var staffName = null;
 var staffDob = null;
+var staffGender =null;
 var staffIDcard = null;
-var staffAddress = null;
 var staffPosition = null;
+var staffPhoneNumber = null;
+var staffEmail = null;
+var staffAddress = null;
+var staffSalary = null;
 //add staff function
 function AddStaff() {
 	$('#options button').prop('disabled', true);
@@ -516,17 +338,26 @@ function AddStaff() {
 function filledStaffForm() {
 
 	staffName = $('[name="staffName"]')[0].value;
+	staffGender = $('[name="staffGender"]')[0].value;
 	staffIDcard = $('[name="staffIDcard"]')[0].value;
+	staffPhoneNumber = $('[name="staffPhoneNumber"]')[0].value;
+	staffEmail = $('[name="staffEmail"]')[0].value;
 	staffAddress = $('[name="staffAddress"]')[0].value;
 	staffPosition = $('[name="staffPosition"]')[0].value;
-	if (staffName == '' || staffIDcard == '' || staffAddress == '' || staffPosition == '' || $('#datepicker-manager-3')[0].value == '') {
+	staffSalary = $('[name="staffSalary"]')[0].value;
+
+	if (staffName == '' || staffIDcard == '' || staffGender == ''|| staffPhoneNumber == ''|| staffEmail == ''|| staffAddress == '' || staffPosition == '' || staffSalary == ''|| $('#datepicker-manager-3')[0].value == '') {
 		$('#manager-dynamic-4').html('<h5>Please Fill In All Fields</h5>');
 	}
 	else if (!$.isNumeric(staffIDcard)) {
 		$('#manager-dynamic-4').html('<h5>ID card Need To Be A Number</h5>');
 	}
+	else if (!$.isNumeric(staffPhoneNumber)) {
+		$('#manager-dynamic-4').html('<h5>Phone Number Need To Be A Number</h5>');
+	}
 	else {
 		staffIDcard = parseInt(staffIDcard, 10);
+		staffPhoneNumber = parseInt(staffPhoneNumber, 10);
 		$.ajax({
 			type: 'POST',
 			url: '/InsertStaff',
@@ -534,8 +365,12 @@ function filledStaffForm() {
 				'staffName': staffName,
 				'staffDob': staffDob,
 				'staffIDcard': staffIDcard,
+				'staffGender': staffGender,
+				'staffPhoneNumber': staffPhoneNumber,
+				'staffEmail': staffEmail,
 				'staffAddress': staffAddress,
-				'staffPosition': staffPosition
+				'staffPosition': staffPosition,
+				'staffSalary': staffSalary
 			},
 			success: function (response) {
 				$('#manager-dynamic-4').html(response);
@@ -569,29 +404,40 @@ function updateStaffFunction(_staffID) {
 			}
 		}
 	});
-	$('#manager-dynamic-5').html('<input type="text" name="newStaffIDcard" placeholder="New ID card">');
-	$('#manager-dynamic-6').html('<input type="text" name="newStaffAddress" placeholder="New Address">');
-	$('#manager-dynamic-7').html('<input type="text" name="newStaffPosition" placeholder="New Position"><button onclick="changeStaffinfo()">Change</button>')
-
+	$('#manager-dynamic-5').html('<input type="text" name="newStaffGender" placeholder="New Gender">');
+	$('#manager-dynamic-6').html('<input type="text" name="newStaffIDcard" placeholder="New ID card">');
+	$('#manager-dynamic-7').html('<input type="text" name="newStaffPhoneNumber" placeholder="New Phone Number">');
+	$('#manager-dynamic-8').html('<input type="text" name="newStaffEmail" placeholder="New Email">');
+	$('#manager-dynamic-9').html('<input type="text" name="newStaffAddress" placeholder="New Address">');
+	$('#manager-dynamic-10').html('<input type="text" name="newStaffPosition" placeholder="New Position">')
+	$('#manager-dynamic-11').html('<input type="text" name="newStaffSalary" placeholder="New Salary"><button onclick="changeStaffinfo()">Change</button>');
 }
 function changeStaffinfo() {
 	newStaffName = $('#manager-dynamic-3 input')[0].value;
-	newStaffIDcard = $('#manager-dynamic-5 input')[0].value;
-	newStaffAddress = $('#manager-dynamic-6 input')[0].value;
-	newStaffPosition = $('#manager-dynamic-7 input')[0].value;
+	newStaffGender = $('#manager-dynamic-5 input')[0].value;
+	newStaffIDcard = $('#manager-dynamic-6 input')[0].value;
+	newStaffPhoneNumber = $('#manager-dynamic-7 input')[0].value;
+	newStaffEmail = $('#manager-dynamic-8 input')[0].value;
+	newStaffAddress = $('#manager-dynamic-9 input')[0].value;
+	newStaffPosition = $('#manager-dynamic-10 input')[0].value;
+	newStaffSalary = $('#manager-dynamic-11 input')[0].value;
 	$.ajax({
 		type: 'POST',
 		url: '/setNewStaffInfo',
 		data: {
-			'staffID': staffID,
+			'staffID' : staffID,
 			'newStaffName': newStaffName,
 			'newStaffDob': newStaffDob,
 			'newStaffIDcard': newStaffIDcard,
+			'newStaffGender': newStaffGender,
+			'newStaffPhoneNumber': newStaffPhoneNumber,
+			'newStaffEmail': newStaffEmail,
 			'newStaffAddress': newStaffAddress,
-			'newStaffPosition': newStaffPosition
+			'newStaffPosition': newStaffPosition,
+			'newStaffSalary': newStaffSalary
 		},
 		success: function (response) {
-			$('#manager-dynamic-8').html(response);
+			$('#manager-dynamic-12').html(response);
 		}
 	});
 }
@@ -684,4 +530,287 @@ function MemberOption() {
 			$('#manager-dynamic-1').html(reponse);
 		}
 	});
+}
+
+var memberID = null;
+var memberName = null;
+var memberDob = null;
+var memberGender =null;
+var memberIDcard = null;
+var memberPhoneNumber = null;
+var memberEmail = null;
+var memberType = null;
+//add member function
+function AddMember() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/fectchMemberInsertForm',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+			$('#datepicker-manager-3').pickadate({
+				changeYear: true,
+				changeMonth: true,
+				formatSubmit: 'yyyy/mm/dd',
+				hiddenName: true,
+				onSet: function (event) {
+					if (event.select) {
+						memberDob = this.get('select', 'yyyy/mm/dd');
+					}
+				}
+
+			});
+		}
+	});
+}
+function filledMemberForm() {
+
+	memberName = $('[name="memberName"]')[0].value;
+	memberGender = $('[name="memberGender"]')[0].value;
+	memberIDcard = $('[name="memberIDcard"]')[0].value;
+	memberPhoneNumber = $('[name="memberPhoneNumber"]')[0].value;
+	memberEmail = $('[name="memberEmail"]')[0].value;
+	memberType = $('[name="memberType"]')[0].value;
+
+	if (memberName == '' || memberIDcard == '' || memberGender == ''|| memberPhoneNumber == ''|| memberEmail == ''|| memberType == ''|| $('#datepicker-manager-3')[0].value == '') {
+		$('#manager-dynamic-4').html('<h5>Please Fill In All Fields</h5>');
+	}
+	else if (!$.isNumeric(memberIDcard)) {
+		$('#manager-dynamic-4').html('<h5>ID card Need To Be A Number</h5>');
+	}
+	else if (!$.isNumeric(memberPhoneNumber)) {
+		$('#manager-dynamic-4').html('<h5>Phone Number Need To Be A Number</h5>');
+	}
+	else {
+		memberIDcard = parseInt(memberIDcard, 10);
+		memberPhoneNumber = parseInt(memberPhoneNumber, 10);
+		$.ajax({
+			type: 'POST',
+			url: '/InsertMember',
+			data: {
+				'memberName': memberName,
+				'memberDob': memberDob,
+				'memberIDcard': memberIDcard,
+				'memberGender': memberGender,
+				'memberPhoneNumber': memberPhoneNumber,
+				'memberEmail': memberEmail,
+				'memberType': memberType
+			},
+			success: function (response) {
+				$('#manager-dynamic-4').html(response);
+			}
+		});
+	}
+}
+
+
+//update member function
+function UpdateMember() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/getMemberInfo',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+		}
+	});
+}
+
+function updateMemberFunction(_memberID) {
+	memberID = _memberID;
+	$('#manager-dynamic-2 button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<input type="text" name="newMemberName" placeholder="New Name">');
+	$('#manager-dynamic-4').html('<input id="datepicker-manager-4" name="newMemberDob" placeholder="New Date of Birth">');
+	$('#datepicker-manager-4').pickadate({
+		formatSubmit: 'yyyy/mm/dd',
+		hiddenName: true,
+		onSet: function (event) {
+			if (event.select) {
+				newMemberDob = this.get('select', 'yyyy/mm/dd');
+			}
+		}
+	});
+	$('#manager-dynamic-5').html('<input type="text" name="newMemberGender" placeholder="New Gender">');
+	$('#manager-dynamic-6').html('<input type="text" name="newMemberIDcard" placeholder="New ID card">');
+	$('#manager-dynamic-7').html('<input type="text" name="newMemberPhoneNumber" placeholder="New Phone Number">');
+	$('#manager-dynamic-8').html('<input type="text" name="newMemberEmail" placeholder="New Email">');
+	$('#manager-dynamic-9').html('<input type="text" name="newMemberType" placeholder="New Type"><button onclick="changeMemberInfo()">Change</button>');
+}
+function changeMemberInfo() {
+	newMemberName = $('#manager-dynamic-3 input')[0].value;
+	newMemberGender = $('#manager-dynamic-5 input')[0].value;
+	newMemberIDcard = $('#manager-dynamic-6 input')[0].value;
+	newMemberPhoneNumber = $('#manager-dynamic-7 input')[0].value;
+	newMemberEmail = $('#manager-dynamic-8 input')[0].value;
+	newMemberType = $('#manager-dynamic-9 input')[0].value;
+	$.ajax({
+		type: 'POST',
+		url: '/setNewMemberInfo',
+		data: {
+			'memberID' : memberID,
+			'newMemberName': newMemberName,
+			'newMemberDob': newMemberDob,
+			'newMemberIDcard': newMemberIDcard,
+			'newMemberGender': newMemberGender,
+			'newMemberPhoneNumber': newMemberPhoneNumber,
+			'newMemberEmail': newMemberEmail,
+			'newMemberType': newMemberType
+		},
+		success: function (response) {
+			$('#manager-dynamic-10').html(response);
+		}
+	});
+}
+//delete member function
+function DeleteMember() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/getMemberInfoForDelete',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+		}
+	});
+}
+
+function deleteMemberFunction(_memberID) {
+	memberID = _memberID;
+	$('#manager-dynamic-2 button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<button onclick="deleteMemberInfo()">Delete</button>')
+
+}
+function deleteMemberInfo() {
+	$.ajax({
+		type: 'POST',
+		url: '/deleteMemberInfo',
+		data: { 'memberID': memberID },
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+}
+//show member function
+function ShowAllMember(){
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/getMemberInfo1',
+		success: function (response) {
+			$('#manager-dynamic-3').html(response);
+		}
+	});
+}
+
+function showSelectedMemberFunction(_memberID){
+	memberID = _memberID;
+	$.ajax({
+		type: 'POST',
+		url: '/showSelectedMemberInfo',
+		data: {
+			'memberID': memberID
+		},
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+}
+//search member function
+function SearchMember() {
+	$('#options button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<input type="text" name="SearchMemberName" placeholder="Search by name"><button onclick="searchMemberInfo()">Search</button>');
+
+}
+
+function searchMemberInfo() {
+	searchMemberName = $('#manager-dynamic-3 input')[0].value;
+	$.ajax({
+		type: 'POST',
+		url: '/searchMemberInfo',
+		data: {
+			'searchMemberName': searchMemberName
+		},
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+
+}
+
+
+//function for movies
+function MovieOption() {
+	$('#options button ').prop('disabled', true);
+	$.ajax({
+		type: 'POST',
+		url: '/getMovieOption',
+		success: function (reponse) {
+			$('#manager-dynamic-2').html(reponse);
+		}
+	});
+}
+//
+//add movie
+function insertMovie() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/fetchMovieInsertForm',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+			$('#datepicker-manager-3').pickadate({
+				formatSubmit: 'yyyy/mm/dd',
+				hiddenName: true,
+				onSet: function (event) {
+					if (event.select) {
+						startShowing = this.get('select', 'yyyy/mm/dd');
+					}
+				}
+			});
+			$('#datepicker-manager-4').pickadate({
+				formatSubmit: 'yyyy/mm/dd',
+				hiddenName: true,
+				onSet: function (event) {
+					if (event.select) {
+						endShowing = this.get('select', 'yyyy/mm/dd');
+					}
+				}
+			});
+		}
+	});
+}
+function filledMovieForm() {
+	availTypes = $('[name="movieTypes"]')[0].value.toUpperCase().trim();
+	movieName = $('[name="movieName"]')[0].value;
+	movieLang = $('[name="movieLang"]')[0].value;
+	movieLen = $('[name="movieLen"]')[0].value;
+	types = ($('[name="movieTypes"]')[0].value.toUpperCase().trim()).split(' ');
+	atleastTypes = ['2D', '3D', '4DX'];
+	allTypes = [undefined].concat(atleastTypes);
+	if ($('#datepicker-manager-3')[0].value == '' || $('#datepicker-manager-4')[0].value == '' ||
+		movieName == '' || movieLang == '' || movieLen == '' || $('[name="movieTypes"]')[0].value == '')
+		$('#manager-dynamic-3').html('<h5>Please Fill In All Fields</h5>');
+	else if (!(atleastTypes.includes(types[0]) && allTypes.includes(types[1]) && allTypes.includes(types[2])))
+		$('#manager-dynamic-3').html('<h5>Invalid Format For Movie Types</h5>');
+	else if (!$.isNumeric(movieLen))
+		$('#manager-dynamic-3').html('<h5>Movie Length Needs To Be A Number</h5>');
+	else if (Date.parse(startShowing) > Date.parse(endShowing))
+		$('#manager-dynamic-3').html("<h5>Premiere Date Must Be Before/On Last Date In Theatres</h5>");
+	else {
+		movieLen = parseInt(movieLen, 10);
+		$.ajax({
+			type: 'POST',
+			url: '/insertMovie',
+			data: {
+				'movieName': movieName,
+				'movieLen': movieLen,
+				'movieLang': movieLang,
+				'types': availTypes,
+				'startShowing': startShowing,
+				'endShowing': endShowing
+			},
+			success: function (response) {
+				$('#manager-dynamic-3').html(response);
+			}
+		});
+	}
 }

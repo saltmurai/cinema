@@ -1,0 +1,14 @@
+<h4>Member Info</h4>
+{% for member in members %}
+<div class="staff">
+<h5>Member Name: {{ member[1] }}</h5>
+<h5>Member Date of birth: {{ member[2] }}</h5>
+<h5>Member Gender: {{ member[3] }}</h5>
+<h5>Member ID card: {{ member[4] }}</h5>
+<h5>Member Phone Number: {{ member[6] }}</h5>
+<h5>Member Email: {{ member[7] }}</h5>
+<h5>Member Type: {{ member[9] }}</h5>
+<h5>Member ID: {{ member[0] }}</h5>
+<h4></h4>
+</div>
+{% endfor %}
