@@ -673,6 +673,63 @@ def insertMovie():
 
     return '<h5>Something Went Wrong</h5>'
 
+#Update movie route
+@app.route('/getMovieInfo', methods=['GET'])
+def movieList():
+    res = runQuery("SELECT * FROM movies")
+
+    return render_template('currentmovie.html', movies=res)
+
+@app.route('/setNewMovieInfo', methods=['POST'])
+def setMovieInfo():
+    movieID = request.form['movieID']
+    newMovieName = request.form['newMovieName']
+    newMovieLen = request.form['newMovieLen']
+    newMovieLanguage = request.form['newMovieLanguage']
+    types = request.form['types']
+    startShowing = request.form['startShowing']
+    endShowing = request.form['endShowing']
+    res = runQuery("UPDATE movies SET movie_name = '"+newMovieName+"', length = "+str(newMovieLen)+", language = '"+newMovieLanguage+"',  show_start = '"+startShowing+"', show_end = '"+endShowing+"' WHERE movie_id = "+str(movieID))
+
+    if res == []:
+        subTypes = types.split(' ')
+        while len(subTypes) < 3:
+            subTypes.append('NUL')
+
+        res = runQuery("UPDATE types SET type1 = '"+subTypes[0]+"', type2 = '"+subTypes[1]+"', type3 = '"+subTypes[2]+"' WHERE movie_id = " +str(movieID))
+        if res == []:
+            return '<h5>Movie Info Successfully Changed</h5>'
+        else:
+            print(res)
+    else:
+        print(res)        
+    return '<h5>Something Went Wrong</h5>'
+#delete movie route
+@app.route('/getMovieInfoForDelete', methods=['GET'])
+def movieList1():
+    res = runQuery("SELECT * FROM movies")
+
+    return render_template('currentmovie1.html', movies=res)
+@app.route('/deleteMovieInfo', methods=['POST'])
+def deleteMovieInfo():
+    movieID = request.form['movieID']
+    res = runQuery("DELETE FROM movies WHERE movie_id = "+str(movieID))
+    if res == []:
+        return '<h5>Info Successfully Deleted</h5>'
+    else:
+        print(res)
+    return '<h5>Something Went Wrong</h5>'
+#Search movie route
+@app.route('/searchMovieInfo', methods=['POST'])
+def searchMovieInfo():
+    searchMovieName = request.form['searchMovieName']
+    res = runQuery(
+        "SELECT * FROM movies WHERE movie_name = '"+searchMovieName+"'")
+    if res == []:
+        return '<h4>No Movie Info</h4>'
+
+    return render_template('searchmovieinfo.html', movies=res)
+
 
 
 

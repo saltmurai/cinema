@@ -748,7 +748,7 @@ function MovieOption() {
 		}
 	});
 }
-//
+
 //add movie
 function insertMovie() {
 	$('#options button').prop('disabled', true);
@@ -813,4 +813,134 @@ function filledMovieForm() {
 			}
 		});
 	}
+}
+
+//update movie
+function UpdateMovie() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/getMovieInfo',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+		}
+	});
+}
+function updateMovieFunction(_movieID) {
+	movieID = _movieID;
+	$('#manager-dynamic-2 button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<input type="text" name="newMovieName" placeholder="New Movie Name">');
+	$('#manager-dynamic-4').html('<input type="text" name="newMovieLen" placeholder="New Movie Lenght">');
+	$('#manager-dynamic-5').html('<input type="text" name="newMovieLanguage" placeholder="New Movie Language">');
+	$('#manager-dynamic-6').html('<input type="text" name="newMovieTypes" placeholder="New Movie Types">');
+	$('#manager-dynamic-7').html('<input id="datepicker-manager-7" placeholder="New Premiere Date">');
+	$('#datepicker-manager-7').pickadate({
+		formatSubmit: 'yyyy/mm/dd',
+		hiddenName: true,
+		onSet: function (event) {
+			if (event.select) {
+				startShowing = this.get('select', 'yyyy/mm/dd');
+			}
+		}
+	});
+	$('#manager-dynamic-8').html('<input id="datepicker-manager-8" placeholder="Last Date In Theatres">');
+	$('#datepicker-manager-8').pickadate({
+		formatSubmit: 'yyyy/mm/dd',
+		hiddenName: true,
+		onSet: function (event) {
+			if (event.select) {
+				endShowing = this.get('select', 'yyyy/mm/dd');
+			}
+		}
+	});
+	$('#manager-dynamic-9').html('<button onclick="changeMovieInfo()">Change</button>')
+}
+
+function changeMovieInfo() {
+	newMovieName = $('#manager-dynamic-3 input')[0].value;
+	newMovieLen = $('#manager-dynamic-4 input')[0].value;
+	newMovieLanguage = $('#manager-dynamic-5 input')[0].value;
+	availTypes = $('[name="newMovieTypes"]')[0].value.toUpperCase().trim();
+	types = ($('[name="newMovieTypes"]')[0].value.toUpperCase().trim()).split(' ');
+	atleastTypes = ['2D', '3D', '4DX'];
+	allTypes = [undefined].concat(atleastTypes);
+	if ($('#datepicker-manager-7')[0].value == '' || $('#datepicker-manager-8')[0].value == '' ||
+		newMovieName == '' || newMovieLanguage == '' || newMovieLen == '' || $('[name="newMovieTypes"]')[0].value == '')
+		$('#manager-dynamic-10').html('<h5>Please Fill In All Fields</h5>');
+	else if (!(atleastTypes.includes(types[0]) && allTypes.includes(types[1]) && allTypes.includes(types[2])))
+		$('#manager-dynamic-10').html('<h5>Invalid Format For Movie Types</h5>');
+	else if (!$.isNumeric(newMovieLen))
+		$('#manager-dynamic-10').html('<h5>Movie Length Needs To Be A Number</h5>');
+	else if (Date.parse(startShowing) > Date.parse(endShowing))
+		$('#manager-dynamic-10').html("<h5>Premiere Date Must Be Before/On Last Date In Theatres</h5>");
+	else {
+		newMovieLen = parseInt(newMovieLen, 10);
+		$.ajax({
+				type: 'POST',
+				url: '/setNewMovieInfo',
+				data: {
+					'movieID' : movieID,
+					'newMovieName': newMovieName,
+					'newMovieLen': newMovieLen,
+					'newMovieLanguage': newMovieLanguage,
+					'types': availTypes,
+					'startShowing': startShowing,
+					'endShowing': endShowing
+				},
+				success: function (response) {
+					$('#manager-dynamic-10').html(response);
+				}
+			});
+	}
+	
+	
+	
+}
+//delete movie function
+function DeleteMovie() {
+	$('#options button').prop('disabled', true);
+	$.ajax({
+		type: 'GET',
+		url: '/getMovieInfoForDelete',
+		success: function (response) {
+			$('#manager-dynamic-2').html(response);
+		}
+	});
+}
+function deleteMovieFunction(_movieID) {
+	movieID = _movieID;
+	$('#manager-dynamic-2 button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<button onclick="deleteMovieInfo()">Delete</button>')
+
+}
+function deleteMovieInfo() {
+	$.ajax({
+		type: 'POST',
+		url: '/deleteMovieInfo',
+		data: { 'movieID': movieID },
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+}
+//search movie function
+function SearchMovie() {
+	$('#options button').prop('disabled', true);
+	$('#manager-dynamic-3').html('<input type="text" name="SearchMovieName" placeholder="Search by name"><button onclick="searchMovieInfo()">Search</button>');
+
+}
+
+function searchMovieInfo() {
+	searchMovieName = $('#manager-dynamic-3 input')[0].value;
+	$.ajax({
+		type: 'POST',
+		url: '/searchMovieInfo',
+		data: {
+			'searchMovieName': searchMovieName
+		},
+		success: function (response) {
+			$('#manager-dynamic-4').html(response);
+		}
+	});
+
 }
