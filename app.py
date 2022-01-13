@@ -50,7 +50,7 @@ def login():
             if account["role"] == "cashier":
                 return render_template("cashier1.html")
             if account["role"] == "manager":
-                return render_template("manager.html")
+                return render_template("manager2.html")
 
             # Account doesnt exist or username/password incorrect
     return render_template("loginfail.html")
