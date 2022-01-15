@@ -1,11 +1,11 @@
 -- import database
-use db_theatre;
+use db_theatre1;
 
 set foreign_key_checks=0;
 
-create table halls (hall_id int, class varchar(10), no_of_seats int, primary key(hall_id,class));
-
 create table manager_info (manager_id int primary key, manager_name varchar(40), age int);
+
+create table halls (hall_id int, class varchar(10), no_of_seats int, primary key(hall_id,class));
 
 create table movies (movie_id int primary key, movie_name varchar(40), length int, language varchar(10), show_start date, show_end date);
 
@@ -103,3 +103,11 @@ WHERE datediff(show_end,curdate)<0;
 end; //
 
 delimiter ;
+
+
+
+-- thêm vào để chạy staff (xóa sau)
+create table staff_info( staff_id int primary key, staff_name varchar(40), date_of_birth date, ID_card int, address varchar(60), position varchar(30));
+-- chỉ cần viết thêm như sau là có file sql mới(ví dụ tạo bảng nhân viên và khách hàng )
+create table nhan_vien (ma_nhan_vien int primary key, ten_nhan_vien varchar(40), ngay_sinh date, gioi_tinh varchar(10), can_cuoc_cong_dan int, chuc_vu varchar(20), so_dien_thoai int, email varchar(40), dia_chi varchar(50), luong varchar(20));
+create table khach_hang (ma_khach_hang int primary key, ten_khach_hang varchar(40), ngay_sinh date, gioi_tinh varchar(10), can_cuoc_cong_dan int,  so_dien_thoai int, email varchar(40), loai_khach_hang varchar(20));

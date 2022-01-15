@@ -1,0 +1,16 @@
+<h4>Staff Info</h4>
+{% for staff in staffs %}
+<div class="staff">
+<h5>Staff Name: {{ staff[1] }}</h5>
+<h5>Staff Date of birth: {{ staff[2] }}</h5>
+<h5>Staff Gender: {{ staff[3] }}</h5>
+<h5>Staff ID card: {{ staff[4] }}</h5>
+<h5>Staff Phone Number: {{ staff[6] }}</h5>
+<h5>Staff Email: {{ staff[7] }}</h5>
+<h5>Staff Address: {{ staff[8] }}</h5>
+<h5>Staff Position: {{ staff[5] }}</h5>
+<h5>Staff Salary: {{ staff[9] }}</h5>
+<h5>Staff ID: {{ staff[0] }}</h5>
+<h4></h4>
+</div>
+{% endfor %}

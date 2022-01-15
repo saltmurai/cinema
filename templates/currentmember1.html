@@ -1,0 +1,6 @@
+<h4>Select Member Listing</h4>
+{% for member in members %}
+<button onclick="deleteMemberFunction({{ member[0] }})">
+	<h5>{{ member[1]}} / {{ member[6] }}</h5>
+</button>
+{% endfor %}

@@ -1,0 +1,12 @@
+<h4>Movie Info</h4>
+{% for movie in movies %}
+<div class="staff">
+<h5>Movie Name: {{ movie[1] }}</h5>
+<h5>Movie Length: {{ movie[2] }}</h5>
+<h5>Member Language: {{ movie[3] }}</h5>
+<h5>Movie Premier Date: {{ movie[4] }}</h5>
+<h5>Movie End Date: {{ movie[5] }}</h5>
+<h5>Movie ID: {{ movie[0] }}</h5>
+<h4></h4>
+</div>
+{% endfor %}
